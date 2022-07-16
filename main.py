@@ -2,8 +2,8 @@ import pyautogui
 import PIL
 from PIL import Image
 
-# screen = pyautogui.screenshot("screenshot.png")
-screen = Image.open("screenshot.png")
+screen = pyautogui.screenshot("screenshot.png")
+# screen = Image.open("screenshot.png")
 pix = screen.load()
 begin_point_color = (255, 0, 0)
 field_begin_point_color = (128, 128, 128)
@@ -88,8 +88,9 @@ def find_on_field(screen, pix, object, move_to=False, click=False,
 # выделение нужного окна
 find_on_field(screen, pix, (255, 255, 255), True, True)
 # скрин в нужном окне
-# screen = pyautogui.screenshot("screenshot2.png")
-screen = Image.open("screenshot2.png")
+
+screen = pyautogui.screenshot("screenshot2.png")
+# screen = Image.open("screenshot2.png")
 
 pix = screen.load()
 
@@ -171,9 +172,8 @@ for i in field:
     print(i)
 print("field size is",field_width,"X", field_height)
 
-# screen = pyautogui.screenshot("screenshot2.png")
-screen = Image.open("screenshot3.png")
-pix = screen.load()
+
+
 
 def coordinates_changer(coords):
     # new_x = (coords[0]-zero_point[0])//sum(cell_x)
@@ -184,6 +184,7 @@ def coordinates_changer(coords):
 
 def find_number_in_cell(x,y):
     colors = set()
+    other_colors = set()
     coords_begin = coordinates_changer((x,y))
 
     for y in range(coords_begin[1],coords_begin[1]+sum(cell_y)):
@@ -192,18 +193,60 @@ def find_number_in_cell(x,y):
             color = pix[x,y]
             if color in allowed_colors:
                 colors.add(color)
-    if colors == set(cell_colors_x):
+            else:
+                other_colors.add(color)
+    if (255,255,255) in other_colors:
         return None
     for i in numbers_colors.keys():
         if colors == numbers_colors[i]:
             return i
-    return None
+    return 0
+def fields_arround(cords):
+    results={
+        None:[],
+        "flag":[]
+    }
+    for y in range(cords[1]-1,cords[1]+2):
+        for x in range(cords[0]-1,cords[0]+2):
+            if 0<=x<len(field[0]) and 0<=y<len(field):
+                if field[y][x] == None or field[y][x] == "flag":
+                    results[field[y][x]].append((x,y))
+    return results
 def algorhytm1():
+    numbers=dict()
     for y in range(field_height):
         for x in range(field_width):
             res = find_number_in_cell(x,y)
             field[y][x] = res
-algorhytm1()
-for i in field:
-    print(i)
+            if res:
+                if 1<= res <=8 or res == "flag":
+                    if res not in numbers.keys():
+                        numbers[res] = [(x,y)]
+                    else:
+                        numbers[res].append((x,y))
+    print("тут все заебись")
+    for i in field:
+        print(i)
+    print(numbers)
+    #TODO: отсортировать словарь
+    for i in numbers.keys():
+        for j in numbers[i]:
+            res = fields_arround(j)
+            if len(res[None])- len(res["flag"]) == i:
+                for k in res[None]:
+                    if k not in res["flag"]:
+                        pyautogui.rightClick(coordinates_changer((k[0],k[1])))
+                        res["flag"].append(k)
+                        field[k[1]][k[0]] = "flag"
+    print("и тут")
+pyautogui.click(zero_point[0]+2,zero_point[1]+2)
+screen = pyautogui.screenshot("screenshot3.png")
+# screen = Image.open("screenshot3.png")
+pix = screen.load()
+try:
+    algorhytm1()
+except Exception as e:
+    print(e)
+    s = input()
+print("заебумба ^_^")
 s = input()
