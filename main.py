@@ -2,8 +2,8 @@ import pyautogui
 import PIL
 from PIL import Image
 
-screen = pyautogui.screenshot("screenshot.png")
-# screen = Image.open("screenshot.png")
+# screen = pyautogui.screenshot("screenshot.png")
+screen = Image.open("screenshot.png")
 pix = screen.load()
 begin_point_color = (255, 0, 0)
 field_begin_point_color = (128, 128, 128)
@@ -11,6 +11,18 @@ cell_colors_y = [(192, 192, 192), (128, 128, 128), (255, 255, 255)]
 cell_colors_x = [(192, 192, 192), (128, 128, 128), (255, 255, 255)]
 color_pos = 0
 zero_point = []
+numbers_colors = {
+    1:{(0,0,255),},
+    2: {(0,128,0),},
+    3: {(255,0,0),},
+    4: {(0,0,128),},
+    5: {(128,0,0),},
+    6: {(0,128,128),},
+    7: {(0,0,0),},
+    # 8: {(128,128,128),},
+    "flag":{(255,0,0),(0,0,0),}
+}
+allowed_colors= [(0,0,255), (0,128,0),(255,0,0),(0,0,128),(128,0,0),(0,128,128),(0,0,0),(128,128,128),]
 
 def find_on_field(screen, pix, object, move_to=False, click=False,
                   return_coords=False, find_last=False, beging_with=(0, 0), find_only_in_row=False, find_only_in_column=False):
@@ -76,8 +88,8 @@ def find_on_field(screen, pix, object, move_to=False, click=False,
 # выделение нужного окна
 find_on_field(screen, pix, (255, 255, 255), True, True)
 # скрин в нужном окне
-screen = pyautogui.screenshot("screenshot2.png")
-# screen = Image.open("screenshot2.png")
+# screen = pyautogui.screenshot("screenshot2.png")
+screen = Image.open("screenshot2.png")
 
 pix = screen.load()
 
@@ -105,7 +117,7 @@ for i in range(0, len(cell_colors_y)):
 
 # считаем клетки по вертикали
 field_width = -1
-field_height = -1
+field_height = 0
 flag = True
 new_x, new_y = field_beging_coords[0], field_beging_coords[1]
 while flag:
@@ -154,9 +166,44 @@ while flag:
             break
 
 
-
-field = [[0]*field_width for y in range(field_height)]
+field = [[None]*field_width for y in range(field_height)]
 for i in field:
     print(i)
 print("field size is",field_width,"X", field_height)
+
+# screen = pyautogui.screenshot("screenshot2.png")
+screen = Image.open("screenshot3.png")
+pix = screen.load()
+
+def coordinates_changer(coords):
+    # new_x = (coords[0]-zero_point[0])//sum(cell_x)
+    new_x = zero_point[0] + sum(cell_x)*coords[0]
+    # new_y = (coords[1]-zero_point[1])//sum(cell_y)
+    new_y = zero_point[1] + sum(cell_y)*coords[1]
+    return (new_x,new_y)
+
+def find_number_in_cell(x,y):
+    colors = set()
+    coords_begin = coordinates_changer((x,y))
+
+    for y in range(coords_begin[1],coords_begin[1]+sum(cell_y)):
+        for x in range(coords_begin[0],coords_begin[0]+sum(cell_x)):
+
+            color = pix[x,y]
+            if color in allowed_colors:
+                colors.add(color)
+    if colors == set(cell_colors_x):
+        return None
+    for i in numbers_colors.keys():
+        if colors == numbers_colors[i]:
+            return i
+    return None
+def algorhytm1():
+    for y in range(field_height):
+        for x in range(field_width):
+            res = find_number_in_cell(x,y)
+            field[y][x] = res
+algorhytm1()
+for i in field:
+    print(i)
 s = input()
